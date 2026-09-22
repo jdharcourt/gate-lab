@@ -19,7 +19,10 @@ export default function Page() {
   const [answers, setAnswers] = useState<(boolean | null)[]>(Array(4).fill(null))
   const [checked, setChecked] = useState(false)
   const [selectedRow, setSelectedRow] = useState(0)
+  const [simInputs, setSimInputs] = useState<Record<string, boolean>>({ A: false, B: false, C: false, D: false })
+  const [simRun, setSimRun] = useState<{ id: number; expression: string; values: Record<string, boolean> } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const nextSimId = useRef(0)
 
   const parsed = useMemo(() => {
     try {
@@ -36,6 +39,7 @@ export default function Page() {
   const givenRow = problem % (1 << inputsIn(parseExpression(problems[problem])).length)
   const correct = mode === 'practice' && node ? Array.from({ length: rowCount }, (_, index) => evaluate(node, rowInputs(names, index))) : []
   const score = correct.reduce((total, value, index) => total + (index !== givenRow && answers[index] === value ? 1 : 0), 0)
+  const simulation = mode === 'build' && simRun?.expression === expression ? simRun : null
 
   function insert(value: string) {
     const field = inputRef.current
@@ -43,6 +47,7 @@ export default function Page() {
     const end = field?.selectionEnd ?? expression.length
     const addition = operators.includes(value) ? value === 'NOT' ? 'NOT ' : ` ${value} ` : value
     setExpression(expression.slice(0, start) + addition + expression.slice(end))
+    setSimRun(null)
     requestAnimationFrame(() => {
       field?.focus()
       field?.setSelectionRange(start + addition.length, start + addition.length)
@@ -52,6 +57,13 @@ export default function Page() {
   function changeMode(next: Mode) {
     setMode(next)
     setSelectedRow(0)
+    setSimRun(null)
+  }
+
+  function playSimulation() {
+    if (mode !== 'build' || !node) return
+    setSimRun({ id: ++nextSimId.current, expression, values: { ...simInputs } })
+    setSelectedRow(names.reduce((index, name) => index * 2 + Number(Boolean(simInputs[name])), 0))
   }
 
   function nextProblem() {
@@ -110,14 +122,20 @@ export default function Page() {
           <h1 id="editor-title">Build an expression</h1>
           <p className="section-intro">Type directly or insert a block at the cursor.</p>
           <label htmlFor="expression">Expression</label>
-          <input id="expression" ref={inputRef} value={expression} onChange={event => setExpression(event.target.value)} maxLength={256} spellCheck={false} autoComplete="off" aria-describedby="expression-help expression-error" />
+          <input id="expression" ref={inputRef} value={expression} onChange={event => { setExpression(event.target.value); setSimRun(null) }} maxLength={256} spellCheck={false} autoComplete="off" aria-describedby="expression-help expression-error" />
           <p id="expression-help" className="hint">Use A–Z, parentheses, and the gate buttons. XAND is another name for XNOR. Up to four inputs.</p>
           {parsed.error && <p id="expression-error" className="error" role="alert">{parsed.error}</p>}
           <h2>Inputs</h2>
           <div className="block-row">{'ABCD'.split('').map(name => <button className="block input-block" key={name} onClick={() => insert(name)}>{name}</button>)}<button className="block" onClick={() => insert('(')}>(</button><button className="block" onClick={() => insert(')')}>)</button></div>
           <h2>Gates</h2>
           <div className="block-row">{operators.map(gate => <button className="block" key={gate} onClick={() => insert(gate)}>{gate}</button>)}</div>
-          <div className="example"><span>Try an example</span><button onClick={() => setExpression('(A AND B) OR NOT C')}>(A AND B) OR NOT C</button></div>
+          <div className="example"><span>Try an example</span><button onClick={() => { setExpression('(A AND B) OR NOT C'); setSimRun(null) }}>(A AND B) OR NOT C</button></div>
+          <div className="simulator" aria-label="Logic simulator">
+            <h2>Simulator</h2>
+            <p>Set the inputs, then play the signal through the circuit.</p>
+            <div className="sim-inputs">{[...'ABCD', ...names.filter(name => !'ABCD'.includes(name))].map(name => <div className="sim-input" key={name}><span>{name}</span><button type="button" aria-label={`${name} input: ${Number(Boolean(simInputs[name]))}. Toggle value`} aria-pressed={Boolean(simInputs[name])} onClick={() => { setSimInputs(current => ({ ...current, [name]: !current[name] })); setSimRun(null) }}>{Number(Boolean(simInputs[name]))}</button></div>)}</div>
+            <div className="sim-actions"><button className="sim-play" onClick={playSimulation} disabled={!node}>▶ Play</button>{simulation && node && <output role="status">Q = {Number(evaluate(node, simulation.values))}</output>}</div>
+          </div>
         </>}
         {mode === 'practice' && <>
           <h1 id="editor-title">Complete the table</h1>
@@ -145,7 +163,7 @@ export default function Page() {
               const row = rowInputs(names, index)
               const output = mode === 'table' ? tableOutputs[index] : evaluate(node, row)
               const isGiven = mode === 'practice' && index === givenRow
-              return <tr key={index} className={index === currentRow ? 'selected' : ''} onClick={() => setSelectedRow(index)}>
+              return <tr key={index} className={index === currentRow ? 'selected' : ''} onClick={() => { setSelectedRow(index); if (mode === 'build') setSimRun(null) }}>
                 {names.map(name => <td key={name}>{row[name] ? '1' : '0'}</td>)}
                 <td className="output-cell">{mode === 'practice' && !isGiven ? <button className={`output-button ${checked ? answers[index] === correct[index] ? 'correct' : 'incorrect' : ''}`} onClick={() => cycleAnswer(index)} aria-label={`Row ${index + 1} output, ${answers[index] === null ? 'unset' : Number(answers[index])}`}>{answers[index] === null ? '—' : Number(answers[index])}</button>
                   : mode === 'table' ? <button className="output-button" onClick={() => cycleOutput(index)} aria-label={`Row ${index + 1} output, ${output === null ? 'unset' : Number(output)}`}>{output === null ? '—' : Number(output)}</button>
@@ -159,7 +177,7 @@ export default function Page() {
 
       <section className="diagram panel" aria-labelledby="diagram-title">
         <div className="panel-heading"><h2 id="diagram-title">Gate diagram</h2>{node && <span>Row {currentRow + 1} selected</span>}</div>
-        {node ? <><Circuit node={node} values={values} /><div className="signal-key"><span><i className="key-line high" /> 1 · high</span><span><i className="key-line" /> 0 · low</span></div></>
+        {node ? <><Circuit key={simulation?.id} node={node} values={simulation?.values ?? values} animate={Boolean(simulation)} /><div className="signal-key"><span><i className="key-line high" /> 1 · high</span><span><i className="key-line" /> 0 · low</span></div></>
           : <div className="empty-state">{mode === 'table' ? 'Complete the outputs to generate a circuit.' : 'Fix the expression to generate a circuit.'}</div>}
       </section>
     </div>

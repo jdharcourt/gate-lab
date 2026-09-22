@@ -42,9 +42,11 @@ h1,h2,p{margin-top:0}
 .edit-canvas{display:block;flex:none;margin:auto;max-width:none;touch-action:none}
 .canvas-guide{fill:none;stroke:#e3e8df;stroke-dasharray:4 6}
 .canvas-input,.canvas-output{fill:#eef3e9;stroke:#7f9875;stroke-width:1.5}
+.canvas-input.on,.canvas-output.on{fill:#dce9ca;stroke:#557638}
 .canvas-input{cursor:grab}
 .canvas-input:active{cursor:grabbing}
 .canvas-gate{fill:#fff;stroke:#566b52;stroke-width:1.7;stroke-linejoin:round}
+.canvas-gate.on{fill:#e6efd7;stroke:#557638}
 .gate-drag-area{fill:transparent;cursor:grab}
 .gate-drag-area:active{cursor:grabbing}
 .canvas-label{text-anchor:middle;fill:#293629;font-size:14px;font-weight:700;pointer-events:none;user-select:none}
@@ -53,6 +55,9 @@ h1,h2,p{margin-top:0}
 .pin.selected{fill:#c1823e;stroke:#9b612b}
 .pin.connected{fill:#507345;stroke:#507345}
 .edit-wire{fill:none;stroke:#647d5d;stroke-width:2.4}
+.edit-wire.on{stroke:#547a39;stroke-width:3}
+.diagram-playing .edit-wire{stroke-dasharray:1;stroke-dashoffset:1;animation:signal-wire .32s ease forwards}
+.diagram-playing .canvas-node,.diagram-playing .canvas-output{animation:signal-node .25s ease both}
 .canvas-footer{min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 18px;border-top:1px solid #dbe0d8}
 .canvas-footer span{font-size:13px;line-height:1.4;overflow-wrap:anywhere}
 .circuit-valid{color:#406835}
@@ -84,6 +89,17 @@ h1,h2,p{margin-top:0}
 .input-block{background:#eaf0e4}
 .example{display:flex;flex-direction:column;align-items:flex-start;gap:7px;border-top:1px solid #e2e7df;margin-top:28px;padding-top:16px;color:#6e786d;font-size:13px}
 .example button{border:0;background:none;padding:0;color:#426b39;text-decoration:underline;text-underline-offset:3px;text-align:left;font-size:13px}
+.simulator{border-top:1px solid #e2e7df;margin-top:24px;padding-top:1px}
+.simulator p{font-size:13px;line-height:1.5;color:#657063;margin:0 0 14px}
+.sim-inputs{display:flex;flex-wrap:wrap;gap:8px}
+.sim-input{display:flex;flex-direction:column;gap:6px;min-width:52px}
+.sim-input span{font-size:13px;font-weight:700}
+.sim-input button{height:40px;border:1px solid #b9c4b5;border-radius:6px;background:#fff;color:#2d392d;font-weight:700}
+.sim-input button[aria-pressed=true]{background:#365334;border-color:#365334;color:#fff}
+.sim-actions{display:flex;align-items:center;gap:14px;margin-top:16px}
+.sim-play{border:1px solid #365334;border-radius:6px;background:#365334;color:#fff;padding:9px 13px;font-size:13px;font-weight:700}
+.sim-play:hover:not(:disabled){background:#294328}
+.sim-actions output{font-size:16px;font-weight:700;color:#365334}
 .panel-heading{height:54px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 18px;border-bottom:1px solid #dbe0d8}
 .panel-heading h2{font-size:15px;margin:0}
 .panel-heading span{font-size:12px;color:#778174}
@@ -106,6 +122,11 @@ tbody tr.selected{background:#eef3e9}
 .circuit-scroll svg{display:block;max-width:none}
 .wire{fill:none;stroke:#aeb8aa;stroke-width:2;stroke-linejoin:round}
 .wire.on{stroke:#6c8a46;stroke-width:2.5}
+.circuit-playing .wire{stroke-dasharray:1;stroke-dashoffset:1;animation:signal-wire .32s ease forwards}
+.circuit-playing .signal-symbol{animation:signal-node .25s ease both}
+.circuit-playing .signal-output{animation:signal-node .2s ease both}
+@keyframes signal-wire{to{stroke-dashoffset:0}}
+@keyframes signal-node{from{opacity:.15}to{opacity:1}}
 .gate{fill:#f8faf5;stroke:#6c7769;stroke-width:1.5}
 .gate.on{fill:#e6efd7;stroke:#557638}
 .gate-back{fill:none}
@@ -132,3 +153,4 @@ tbody tr.selected{background:#eef3e9}
 @media(max-width:1220px){.diagram-workspace{grid-template-columns:238px minmax(0,1fr)}.exercise-pane{grid-column:1/-1;border-top:1px solid #d3d9cf;border-left:0}.exercise-content{max-width:700px}.workspace{grid-template-columns:minmax(250px,300px) minmax(300px,1fr)}.diagram{grid-column:1/-1}.panel{min-height:0}}
 @media(max-width:720px){.topbar{padding:0 16px}.topbar-note{display:none}.tabs{padding:0 16px;gap:22px}.diagram-workspace{display:block}.toolbox{padding:16px;border-right:0;border-bottom:1px solid #d3d9cf}.toolbox p{margin-bottom:16px}.toolbox h2{margin:16px 0 8px}.gate-tools{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.gate-tools button{min-width:0;gap:4px;padding:5px;font-size:12px}.tool-glyph{width:21px;height:21px;font-size:13px}.canvas-scroll{min-height:450px}.canvas-footer{align-items:flex-start}.workspace{display:flex;flex-direction:column;padding:14px;gap:12px}.panel{width:100%}.editor{padding:20px}.diagram{min-height:360px}}
 @media(max-width:460px){.pane-toolbar span{max-width:170px}.canvas-footer{flex-direction:column;align-items:stretch}.canvas-footer button{align-self:flex-start}}
+@media(prefers-reduced-motion:reduce){.circuit-playing .wire,.diagram-playing .edit-wire{animation:none;stroke-dasharray:none;stroke-dashoffset:0}.circuit-playing .signal-symbol,.circuit-playing .signal-output,.diagram-playing .canvas-node,.diagram-playing .canvas-output{animation:none}}

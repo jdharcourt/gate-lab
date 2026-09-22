@@ -69,9 +69,11 @@ export function evaluate(node: Node, inputs: Record<string, boolean>): boolean {
   if (node.kind === 'input') return inputs[node.name] ?? false
   if (node.kind === 'constant') return node.value
   if (node.kind === 'not') return !evaluate(node.child, inputs)
-  const left = evaluate(node.left, inputs)
-  const right = evaluate(node.right, inputs)
-  switch (node.gate) {
+  return evaluateGate(node.gate, evaluate(node.left, inputs), evaluate(node.right, inputs))
+}
+
+export function evaluateGate(gate: Gate, left: boolean, right: boolean): boolean {
+  switch (gate) {
     case 'AND': return left && right
     case 'OR': return left || right
     case 'XOR': return left !== right
