@@ -1,4 +1,5 @@
 import { evaluate, type Node } from './logic'
+import { GateShape, gateOutputX } from './GateShape'
 
 type Positioned = { node: Node; x: number; y: number; id: number; children: Positioned[] }
 
@@ -11,12 +12,12 @@ export function Circuit({ node, values }: { node: Node; values: Record<string, b
 
   let leaf = 0
   let id = 0
-  const width = Math.max(530, 240 + depth(node) * 155)
+  const width = Math.max(550, 270 + depth(node) * 170)
   function position(current: Node, level: number): Positioned {
     const children = current.kind === 'not' ? [position(current.child, level + 1)]
       : current.kind === 'gate' ? [position(current.left, level + 1), position(current.right, level + 1)] : []
     const y = children.length ? children.reduce((sum, child) => sum + child.y, 0) / children.length : 62 + leaf++ * 76
-    return { node: current, x: children.length ? width - 144 - level * 155 : 32, y, id: id++, children }
+    return { node: current, x: children.length ? width - 160 - level * 170 : 32, y, id: id++, children }
   }
   const root = position(node, 0)
   const height = Math.max(250, 124 + (leaf - 1) * 76)
@@ -26,7 +27,7 @@ export function Circuit({ node, values }: { node: Node; values: Record<string, b
   function draw(current: Positioned) {
     current.children.forEach((child, index) => {
       draw(child)
-      const start = child.x + (child.children.length ? (child.node.kind === 'not' || child.node.kind === 'gate' && ['NAND', 'NOR', 'XNOR'].includes(child.node.gate) ? 84 : 76) : 42)
+      const start = child.children.length ? gateOutputX(child.node.kind === 'not' ? 'NOT' : child.node.kind === 'gate' ? child.node.gate : 'AND', child.x) : child.x + 42
       const end = current.x
       const target = current.y + (current.children.length === 1 ? 0 : index === 0 ? -13 : 13)
       strokes.push(<path key={`${child.id}-${current.id}`} d={`M ${start} ${child.y} H ${Math.max(start + 10, end - 23)} V ${target} H ${end}`} className={evaluate(child.node, values) ? 'wire on' : 'wire'} />)
@@ -40,15 +41,12 @@ export function Circuit({ node, values }: { node: Node; values: Record<string, b
       return
     }
     const name = current.node.kind === 'not' ? 'NOT' : current.node.kind === 'gate' ? current.node.gate : ''
-    const inverted = ['NOT', 'NAND', 'NOR', 'XNOR'].includes(name)
     symbols.push(<g key={current.id}>
-      <rect x={current.x} y={current.y - 25} width="76" height="50" rx="5" className={active ? 'gate on' : 'gate'} />
-      <text x={current.x + 38} y={current.y + 5} className="gate-text">{name}</text>
-      {inverted && <circle cx={current.x + 80} cy={current.y} r="4" className="inversion" />}
+      <GateShape gate={name as 'NOT' | 'AND' | 'OR' | 'XOR' | 'NAND' | 'NOR' | 'XNOR'} x={current.x} y={current.y} className={active ? 'gate on' : 'gate'} />
     </g>)
   }
   draw(root)
-  const outputStart = root.x + (root.children.length ? (root.node.kind === 'not' || root.node.kind === 'gate' && ['NAND', 'NOR', 'XNOR'].includes(root.node.gate) ? 84 : 76) : 42)
+  const outputStart = root.children.length ? gateOutputX(root.node.kind === 'not' ? 'NOT' : root.node.kind === 'gate' ? root.node.gate : 'AND', root.x) : root.x + 42
 
   return <div className="circuit-scroll">
     <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} role="img" aria-label="Logic gate circuit for the current expression">

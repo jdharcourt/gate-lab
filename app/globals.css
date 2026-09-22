@@ -21,7 +21,9 @@ h1,h2,p{margin-top:0}
 .toolbox p{font-size:14px;line-height:1.5;color:#616b5f;margin-bottom:28px}
 .toolbox h2{font-size:14px;margin:24px 0 11px}
 .tool-inputs{display:flex;gap:7px}
-.tool-inputs span{display:grid;place-items:center;width:34px;height:34px;background:#fff;border:1px solid #bbc7b5;border-radius:5px;font-size:14px;font-weight:700}
+.tool-inputs button{display:grid;place-items:center;width:34px;height:34px;background:#fff;border:1px solid #bbc7b5;border-radius:5px;font-size:14px;font-weight:700;color:#2d392d}
+.tool-inputs button:hover:not(:disabled){background:#e9eee5;border-color:#758e6a}
+.input-block-list{margin-top:12px}
 .tool-actions{display:flex;gap:7px;margin-top:12px}
 .tool-actions button,.gate-list button,.canvas-footer button,.exercise-actions button,.actions button{border:1px solid #bfc8bc;background:#fff;color:#2d392d;border-radius:6px;padding:7px 9px;font-size:13px;font-weight:700}
 .tool-actions button:hover:not(:disabled),.gate-list button:hover,.canvas-footer button:hover:not(:disabled),.exercise-actions button:hover,.actions button:hover:not(:disabled){background:#e9eee5}
@@ -40,8 +42,11 @@ h1,h2,p{margin-top:0}
 .edit-canvas{display:block;flex:none;margin:auto;max-width:none;touch-action:none}
 .canvas-guide{fill:none;stroke:#e3e8df;stroke-dasharray:4 6}
 .canvas-input,.canvas-output{fill:#eef3e9;stroke:#7f9875;stroke-width:1.5}
-.canvas-gate{fill:#fff;stroke:#566b52;stroke-width:1.7;cursor:grab}
-.canvas-gate:active{cursor:grabbing}
+.canvas-input{cursor:grab}
+.canvas-input:active{cursor:grabbing}
+.canvas-gate{fill:#fff;stroke:#566b52;stroke-width:1.7;stroke-linejoin:round}
+.gate-drag-area{fill:transparent;cursor:grab}
+.gate-drag-area:active{cursor:grabbing}
 .canvas-label{text-anchor:middle;fill:#293629;font-size:14px;font-weight:700;pointer-events:none;user-select:none}
 .pin{fill:#fff;stroke:#507345;stroke-width:2.5;cursor:pointer}
 .pin:hover{fill:#e3eed9}
@@ -103,6 +108,7 @@ tbody tr.selected{background:#eef3e9}
 .wire.on{stroke:#6c8a46;stroke-width:2.5}
 .gate{fill:#f8faf5;stroke:#6c7769;stroke-width:1.5}
 .gate.on{fill:#e6efd7;stroke:#557638}
+.gate-back{fill:none}
 .gate-text,.terminal-text,.output-text{font-family:Arial,Helvetica,sans-serif;text-anchor:middle;fill:#2d362b;font-size:13px;font-weight:700}
 .terminal{fill:#fff;stroke:#8f9d89;stroke-width:1.5}
 .terminal.on{fill:#dce9ca;stroke:#557638}

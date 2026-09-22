@@ -161,7 +161,7 @@ export function compileDiagram(names: string[], gates: DiagramGate[], output: st
 
   function resolve(source: string, path: number[]): Node {
     if (source.startsWith('input:')) {
-      const name = source.slice(6)
+      const name = source.slice(6).split(':')[0]
       if (!names.includes(name)) throw new Error(`Input ${name} is not on the canvas.`)
       return { kind: 'input', name }
     }

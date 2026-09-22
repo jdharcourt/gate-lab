@@ -65,3 +65,9 @@ test('a hand-wired diagram evaluates and rejects incomplete or cyclic circuits',
   assert.throws(() => compileDiagram(['A', 'B'], [{ ...gates[0], sources: ['gate:2', 'input:B'] }, gates[1]], 'gate:2'))
   assert.throws(() => compileDiagram(['A', 'B'], gates, 'input:A'))
 })
+
+test('duplicate input blocks share one truth-table variable', () => {
+  const node = compileDiagram(['A'], [{ id: 1, gate: 'XOR', x: 300, y: 200, sources: ['input:A:1', 'input:A:2'] }], 'gate:1')
+  assert.equal(evaluate(node, { A: false }), false)
+  assert.equal(evaluate(node, { A: true }), false)
+})
