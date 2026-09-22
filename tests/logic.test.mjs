@@ -63,4 +63,5 @@ test('a hand-wired diagram evaluates and rejects incomplete or cyclic circuits',
   assert.equal(evaluate(node, { A: true, B: false }), true)
   assert.throws(() => compileDiagram(['A', 'B'], gates, null))
   assert.throws(() => compileDiagram(['A', 'B'], [{ ...gates[0], sources: ['gate:2', 'input:B'] }, gates[1]], 'gate:2'))
+  assert.throws(() => compileDiagram(['A', 'B'], gates, 'input:A'))
 })
