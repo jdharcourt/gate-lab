@@ -103,7 +103,8 @@ export default function Page() {
       <button className={mode === 'table' ? 'active' : ''} onClick={() => changeMode('table')} aria-current={mode === 'table' ? 'page' : undefined}>From truth table</button>
     </nav>
 
-    {mode === 'diagram' ? <DiagramEditor /> : <div className="workspace">
+    <div className="diagram-host" hidden={mode !== 'diagram'}><DiagramEditor /></div>
+    <div className="workspace" hidden={mode === 'diagram'}>
       <section className="editor panel" aria-labelledby="editor-title">
         {mode === 'build' && <>
           <h1 id="editor-title">Build an expression</h1>
@@ -161,6 +162,6 @@ export default function Page() {
         {node ? <><Circuit node={node} values={values} /><div className="signal-key"><span><i className="key-line high" /> 1 · high</span><span><i className="key-line" /> 0 · low</span></div></>
           : <div className="empty-state">{mode === 'table' ? 'Complete the outputs to generate a circuit.' : 'Fix the expression to generate a circuit.'}</div>}
       </section>
-    </div>}
+    </div>
   </main>
 }

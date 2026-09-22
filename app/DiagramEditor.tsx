@@ -3,8 +3,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { compileDiagram, evaluate, formatExpression, rowInputs, type DiagramGate, type Gate } from './logic'
 
-const gateTypes: (Gate | 'NOT')[] = ['AND', 'OR', 'XOR', 'NOT', 'NAND', 'NOR', 'XNOR']
-
 export function DiagramEditor() {
   const [names, setNames] = useState(['A', 'B'])
   const [gates, setGates] = useState<DiagramGate[]>([])
@@ -87,7 +85,7 @@ export function DiagramEditor() {
       <div className="tool-inputs">{names.map(name => <span key={name}>{name}</span>)}</div>
       <div className="tool-actions"><button onClick={() => setNames([...names, 'ABCD'[names.length]])} disabled={names.length === 4}>Add input</button><button onClick={removeInput} disabled={names.length === 1}>Remove</button></div>
       <h2>Gates</h2>
-      <div className="gate-tools">{gateTypes.map(gate => <button key={gate} onClick={() => addGate(gate)} disabled={gates.length === 10}><span className="tool-glyph">{gate === 'NOT' ? '¬' : gate === 'XOR' || gate === 'XNOR' ? '⊕' : gate === 'OR' || gate === 'NOR' ? '≥' : '&'}</span>{gate}</button>)}</div>
+      <div className="gate-tools">{(['AND', 'OR', 'XOR', 'NOT', 'NAND', 'NOR', 'XNOR'] as const).map(gate => <button key={gate} onClick={() => addGate(gate)} disabled={gates.length === 10}><span className="tool-glyph">{gate === 'NOT' ? '¬' : gate === 'XOR' || gate === 'XNOR' ? '⊕' : gate === 'OR' || gate === 'NOR' ? '≥' : '&'}</span>{gate}</button>)}<button onClick={() => addGate('XNOR')} disabled={gates.length === 10}><span className="tool-glyph">⊕</span>XAND</button></div>
       {gates.length > 0 && <><h2>On canvas</h2><ul className="gate-list">{gates.map(gate => <li key={gate.id}><span>{gate.gate} {gate.id}</span><button onClick={() => removeGate(gate.id)} aria-label={`Remove ${gate.gate} ${gate.id}`}>Remove</button></li>)}</ul></>}
     </aside>
 
@@ -105,7 +103,7 @@ export function DiagramEditor() {
         {names.map((name, index) => <g key={name}>
           <rect x="36" y={102 + index * (300 / Math.max(1, names.length - 1))} width="72" height="36" rx="5" className="canvas-input" />
           <text x="72" y={125 + index * (300 / Math.max(1, names.length - 1))} className="canvas-label">{name}</text>
-          <circle cx="116" cy={120 + index * (300 / Math.max(1, names.length - 1))} r="9" className={source === `input:${name}` ? 'pin selected' : 'pin'} role="button" tabIndex={0} aria-label={`Select output of input ${name}`} onClick={() => setSource(source === `input:${name}` ? null : `input:${name}`)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSource(source === `input:${name}` ? null : `input:${name}`) } }}><title>Output of {name}</title></circle>
+          <circle cx="116" cy={120 + index * (300 / Math.max(1, names.length - 1))} r="9" className={source === `input:${name}` ? 'pin selected' : 'pin'} role="button" tabIndex={0} aria-label={`Select output of input ${name}`} onClick={() => setSource(source === `input:${name}` ? null : `input:${name}`)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSource(source === `input:${name}` ? null : `input:${name}`) } }} />
         </g>)}
         {gates.map(gate => <g key={gate.id} onPointerMove={event => {
           if (drag.current?.id !== gate.id) return
@@ -114,12 +112,12 @@ export function DiagramEditor() {
         }} onPointerUp={() => { drag.current = null }}>
           <rect x={gate.x} y={gate.y - 28} width="90" height="56" rx="5" className="canvas-gate" onPointerDown={event => { if (event.button !== 0) return; drag.current = { id: gate.id, x: gate.x, y: gate.y, clientX: event.clientX, clientY: event.clientY }; event.currentTarget.parentElement?.setPointerCapture(event.pointerId) }} />
           <text x={gate.x + 45} y={gate.y + 5} className="canvas-label">{gate.gate}</text>
-          {gate.sources.map((connection, index) => <circle key={index} cx={gate.x - 8} cy={gate.y + (gate.gate === 'NOT' ? 0 : index === 0 ? -14 : 14)} r="9" className={connection ? 'pin connected' : 'pin'} role="button" tabIndex={0} aria-label={`${gate.gate} ${gate.id} input ${index + 1}${connection ? ', connected' : ', empty'}`} onClick={() => connectGate(gate.id, index)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); connectGate(gate.id, index) } }}><title>{connection ? 'Click to disconnect or replace' : 'Click to connect'}</title></circle>)}
-          <circle cx={gate.x + 98} cy={gate.y} r="9" className={source === `gate:${gate.id}` ? 'pin selected' : 'pin'} role="button" tabIndex={0} aria-label={`Select output of ${gate.gate} ${gate.id}`} onClick={() => setSource(source === `gate:${gate.id}` ? null : `gate:${gate.id}`)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSource(source === `gate:${gate.id}` ? null : `gate:${gate.id}`) } }}><title>Output of {gate.gate} {gate.id}</title></circle>
+          {gate.sources.map((connection, index) => <circle key={index} cx={gate.x - 8} cy={gate.y + (gate.gate === 'NOT' ? 0 : index === 0 ? -14 : 14)} r="9" className={connection ? 'pin connected' : 'pin'} role="button" tabIndex={0} aria-label={`${gate.gate} ${gate.id} input ${index + 1}${connection ? ', connected' : ', empty'}`} onClick={() => connectGate(gate.id, index)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); connectGate(gate.id, index) } }} />)}
+          <circle cx={gate.x + 98} cy={gate.y} r="9" className={source === `gate:${gate.id}` ? 'pin selected' : 'pin'} role="button" tabIndex={0} aria-label={`Select output of ${gate.gate} ${gate.id}`} onClick={() => setSource(source === `gate:${gate.id}` ? null : `gate:${gate.id}`)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSource(source === `gate:${gate.id}` ? null : `gate:${gate.id}`) } }} />
         </g>)}
         <rect x="810" y="238" width="48" height="44" rx="5" className="canvas-output" />
         <text x="834" y="266" className="canvas-label">Q</text>
-        <circle cx="802" cy="260" r="9" className={output ? 'pin connected' : 'pin'} role="button" tabIndex={0} aria-label={output ? 'Q input, connected' : 'Q input, empty'} onClick={() => { setOutput(source); setSource(null) }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setOutput(source); setSource(null) } }}><title>{output ? 'Click to disconnect or replace' : 'Connect circuit output'}</title></circle>
+        <circle cx="802" cy="260" r="9" className={output ? 'pin connected' : 'pin'} role="button" tabIndex={0} aria-label={output ? 'Q input, connected' : 'Q input, empty'} onClick={() => { setOutput(source); setSource(null) }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setOutput(source); setSource(null) } }} />
       </svg></div>
       <div className="canvas-footer"><span className={compiled.node ? 'circuit-valid' : 'circuit-pending'}>{compiled.node ? `Ready · ${formatExpression(compiled.node)}` : compiled.error}</span><button onClick={() => { setGates([]); setOutput(null); setSource(null) }} disabled={!gates.length && !output}>Clear circuit</button></div>
     </section>

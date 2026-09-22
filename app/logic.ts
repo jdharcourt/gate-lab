@@ -157,6 +157,7 @@ export function formatExpression(node: Node): string {
 
 export function compileDiagram(names: string[], gates: DiagramGate[], output: string | null): Node {
   if (!output) throw new Error('Connect a gate or input to Q to complete the circuit.')
+  const visited = new Set<number>()
 
   function resolve(source: string, path: number[]): Node {
     if (source.startsWith('input:')) {
@@ -168,6 +169,7 @@ export function compileDiagram(names: string[], gates: DiagramGate[], output: st
     const gate = gates.find(item => item.id === id)
     if (!gate || !source.startsWith('gate:')) throw new Error('A connection points to a missing gate.')
     if (path.includes(id)) throw new Error('The circuit has a loop. Disconnect one of its wires.')
+    visited.add(id)
     const next = [...path, id]
     if (!gate.sources[0]) throw new Error(`Connect the input pins on ${gate.gate}.`)
     const left = resolve(gate.sources[0], next)
@@ -176,5 +178,7 @@ export function compileDiagram(names: string[], gates: DiagramGate[], output: st
     return { kind: 'gate', gate: gate.gate, left, right: resolve(gate.sources[1], next) }
   }
 
-  return resolve(output, [])
+  const node = resolve(output, [])
+  if (visited.size !== gates.length) throw new Error('Connect every gate to Q or remove unused gates.')
+  return node
 }
